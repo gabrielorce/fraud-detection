@@ -1,4 +1,9 @@
 
+# Fraud Detection Kubernetes-deployed Application
+
+
+
+
 Executing locally with Kind:
 
 ### 1. Create cluster
@@ -19,7 +24,7 @@ Executing locally with Kind:
 ```kubectl get pods -w```     
 
 
-To view the Streamlit UI in your browser with Kind:     
+When all Pods show Running, port-forward to access the Streamlit UI in your browser:
 
 ```kubectl port-forward service/frontend-service 8501:80```   
 

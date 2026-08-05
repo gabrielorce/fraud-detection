@@ -7,7 +7,7 @@ st.set_page_config(page_title="Fraud Detection Portal", layout="wide")
 # Read K8s service endpoint from environment variable
 ML_SERVICE_URL = os.getenv("ML_SERVICE_URL", "http://ml-service:8000")
 
-st.title("🛡️ Real-Time Fraud Detection Engine")
+st.title("Real-Time Fraud Detection Engine")
 st.write("Enter transaction metrics below to evaluate risk using the ML microservice.")
 
 col1, col2 = st.columns(2)
@@ -37,9 +37,9 @@ with col2:
             st.metric("Fraud Probability", f"{prob:.1f}%")
 
             if flagged:
-                st.error("🚨 HIGH RISK: Transaction Flagged for Review")
+                st.error("HIGH RISK: Transaction Flagged for Review")
             else:
-                st.success("✅ LOW RISK: Transaction Approved")
+                st.success("LOW RISK: Transaction Approved")
 
         except Exception as e:
             st.error(f"Could not connect to ML Microservice at {ML_SERVICE_URL}: {e}")
