@@ -1,0 +1,35 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Python Virtual Environments
+venv/
+.venv/
+env/
+.env/
+*.venv
+
+# Model Artifacts (Generated at runtime inside K8s volume)
+*.pkl
+*.joblib
+*.h5
+*.onnx
+
+# Data & Exports
+*.csv
+*.json
+*.sqlite3
+*.db
+
+# IDEs & Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Helm & Local Test Outputs
+*.tgz
+fraud-detection-system.zip
+fraud-detection.zip

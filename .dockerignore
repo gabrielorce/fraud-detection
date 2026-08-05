@@ -1,0 +1,31 @@
+# Version Control
+.git/
+.gitignore
+
+# Documentation & Diagrams
+README.md
+*.png
+*.pdf
+
+# Helm Chart (Docker build does not need Helm templates)
+helm/
+
+# Local Environment & Secrets
+.env
+venv/
+.venv/
+
+# Python Cache
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+**/*.pyd
+
+# Local Model Files & Data
+*.pkl
+*.joblib
+*.csv
+
+# OS files
+.DS_Store
+Thumbs.db
