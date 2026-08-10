@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ml-fraud-service
+spec:
+  replicas: {{ .Values.mlService.replicaCount }}
+  selector:
+    matchLabels:
+      app: ml-fraud-service
+  template:
+    metadata:
+      labels:
+        app: ml-fraud-service
+    spec:
+      initContainers:
+        - name: model-trainer
+          image: python:3.11-slim
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+                echo "=== Starting Model Training Init Step ==="
+                pip install --no-cache-dir pandas scikit-learn joblib numpy
+                python /scripts/train_model.py
+                echo "=== Model Training Complete! File written to PVC. ==="
+          env:
+            - name: MODEL_OUTPUT_DIR
+              value: "/mnt/data"
+          volumeMounts:
+            - name: ml-data-volume
+              mountPath: /mnt/data
+            - name: training-script-volume
+              mountPath: /scripts
+
+      containers:
+        - name: ml-api
+          image: {{ .Values.mlService.image }}
+          imagePullPolicy: IfNotPresent  # <-- Forces K8s to use local image first
+          ports:
+            - containerPort: {{ .Values.mlService.port }}
+          env:
+            - name: MODEL_PATH
+              value: "/mnt/data/fraud_model.pkl"
+          readinessProbe:
+            httpGet:
+              path: /docs
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          volumeMounts:
+            - name: ml-data-volume
+              mountPath: /mnt/data
+
+      volumes:
+        - name: ml-data-volume
+          persistentVolumeClaim:
+            claimName: ml-data-pvc
+        - name: training-script-volume
+          configMap:
+            name: ml-training-script
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ml-service
+spec:
+  ports:
+    - port: 8000
+      targetPort: 8000
+  selector:
+    app: ml-fraud-service

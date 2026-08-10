@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ml-training-script
+data:
+  train_model.py: |-
+{{ .Files.Get "scripts/train_model.py" | indent 4 }}

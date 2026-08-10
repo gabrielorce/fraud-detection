@@ -11,7 +11,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     && rm -rf /var/lib/apt-get/lists/*
 
-# Install Python packages
+# Copy requirements first to leverage Docker layer caching
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 

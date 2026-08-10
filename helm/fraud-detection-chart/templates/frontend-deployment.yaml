@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend-ui
+spec:
+  replicas: {{ .Values.frontend.replicaCount }}
+  selector:
+    matchLabels:
+      app: frontend-ui
+  template:
+    metadata:
+      labels:
+        app: frontend-ui
+    spec:
+      containers:
+        - name: streamlit-app
+          image: {{ .Values.frontend.image }}
+          imagePullPolicy: IfNotPresent  # <-- Forces K8s to use local image first
+          ports:
+            - containerPort: {{ .Values.frontend.port }}
+          env:
+            - name: ML_SERVICE_URL
+              value: "http://ml-service:8000"
+            - name: DB_HOST
+              value: "postgres-service"
+            - name: DB_NAME
+              value: {{ .Values.postgres.dbName }}
+            - name: DB_USER
+              value: {{ .Values.postgres.user }}
+            - name: DB_PASSWORD
+              value: {{ .Values.postgres.password }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-service
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 80
+      targetPort: 8501
+  selector:
+    app: frontend-ui

@@ -1,0 +1,19 @@
+environment: development
+
+postgres:
+  enabled: true
+  user: fraud_user
+  password: securepassword123
+  dbName: fraud_db
+  storageSize: 5Gi
+
+mlService:
+  image: local-registry/fraud-ml-api:latest
+  replicaCount: 2
+  port: 8000
+  modelStorageSize: 2Gi
+
+frontend:
+  image: local-registry/fraud-frontend:latest
+  replicaCount: 1
+  port: 8501
