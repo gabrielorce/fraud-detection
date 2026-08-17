@@ -24,3 +24,7 @@ EXPOSE 8501
 HEALTHCHECK CMD curl --fail http://localhost:8501/_stcore/health || exit 1
 
 CMD ["streamlit", "run", "app.py", "--server.port=8501", "--server.address=0.0.0.0"]
+
+# IMPORTANT: Always set --server.address=0.0.0.0. If you bind to 127.0.0.1 (localhost)
+# inside a container, traffic coming from outside the container (like your host browser
+# or an Ingress controller) will be rejected.

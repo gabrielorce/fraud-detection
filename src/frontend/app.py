@@ -4,7 +4,8 @@ import streamlit as st
 
 st.set_page_config(page_title="Fraud Detection Portal", layout="wide")
 
-# Read K8s service endpoint from environment variable
+# Read K8s service endpoint from environment variable. if not provided, 
+# it will have the "http://ml-service:8000" value.
 ML_SERVICE_URL = os.getenv("ML_SERVICE_URL", "http://ml-service:8000")
 
 st.title("Real-Time Fraud Detection Engine")

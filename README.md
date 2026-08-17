@@ -1,9 +1,50 @@
 
 # Fraud Detection Kubernetes-deployed Application
 
+## Architecture:
+
+
+                                [ User Browser ]  
+                                        │  
+                                        ▼ (HTTP :80 / :8501)  
+                             ┌──────────────────────┐    
+                             │   Frontend (Pod)     │    
+                             │  (Streamlit / Python)│    
+                             └──────────┬───────────┘     
+                                        │    
+                 ┌──────────────────────────┴──────────────────────────┐   
+                 │ Internal HTTP                                       │ Internal DB Query   
+                 ▼ (:8000)                                             ▼ (:5432)   
+    ┌─────────────────────────┐                               ┌─────────────────┐   
+    │ Fraud ML API (Pod)      │                               │ PostgreSQL (Pod)│   
+    │ (FastAPI + Scikit-Learn)│                               │ (StatefulSet)   │   
+    └────────────┬────────────┘                               └────────┬────────┘   
+                 │ Reads Model / Training Data                         │   
+                 ▼                                                     ▼   
+    ┌─────────────────────────┐                               ┌─────────────────┐   
+    │ PersistentVolumeClaim   │                               │ PostgreSQL PVC  │   
+    │ (/data/fraud_model.pkl) │                               │ (/var/lib/data) │   
+    └─────────────────────────┘                               └─────────────────┘   
+
+
 ## Tech stack:
  
 - Streamlit for frontend   
+
+
+## File Structure:
+    fraud-detection-chart/      
+    ├── Chart.yaml      
+    ├── values.yaml 
+    └── templates/  
+        ├── postgres-statefulset.yaml   
+        ├── postgres-service.yaml   
+        ├── ml-deployment.yaml  
+        ├── ml-service.yaml 
+        ├── ml-pvc.yaml                <-- Mounts external training data / model    
+        ├── frontend-deployment.yaml    
+        └── frontend-service.yaml   
+
 
 
 

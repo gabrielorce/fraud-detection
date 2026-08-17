@@ -1,3 +1,9 @@
+# Shared Configurations
+# Default Settings: Sets default configuration values for your application (e.g., replica count, image tags, port numbers).
+# Customization Target: Serves as the primary place users edit settings when installing or updating the chart.
+# Template Inputs: Supplies the variables referenced inside the deployment and service templates.
+
+
 environment: development
 
 postgres:

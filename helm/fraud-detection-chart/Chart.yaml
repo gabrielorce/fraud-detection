@@ -1,3 +1,9 @@
+# Chart Metadata
+# Metadata: Defines the chart's name, version, description, and API version.
+# Dependencies: Lists other external charts this package depends on.
+# Maintainers: Details the authors, maintainers, and home URL of the project.
+
+
 apiVersion: v2
 name: fraud-detection-chart
 description: Helm Chart for Fraud Detection Microservice System
