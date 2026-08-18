@@ -5,6 +5,8 @@ from pydantic import BaseModel
 
 app = FastAPI(title="Fraud Detection Inference API")
 
+
+# Load model mounted from external Volume
 MODEL_PATH = os.getenv("MODEL_PATH", "/mnt/data/fraud_model.pkl")
 
 # Load model dynamically at startup
@@ -27,6 +29,9 @@ class Transaction(BaseModel):
 def healthcheck():
     return {"status": "ok", "model_loaded": model is not None}
 
+
+# This is a FastAPI endpoint that receives a POST request
+# and converts the incoming JSON into a Transaction object.
 @app.post("/predict")
 def predict_fraud(txn: Transaction):
     if not model:
