@@ -1,3 +1,6 @@
+# this script was used previously, it is an alternate version of the train_model.py script
+
+
 import os
 import joblib
 import numpy as np
