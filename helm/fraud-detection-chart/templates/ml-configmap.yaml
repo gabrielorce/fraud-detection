@@ -1,7 +1,7 @@
-# Configuration Data: Stores non-sensitive configuration settings, command-line arguments,
-#      or config files.
+# Configuration Data: Stores non-sensitive configuration settings, 
+#     command-line arguments, or config files.
 # Pod Injection: Allows applications to read settings via environment variables or
-#       mounted volumes without rebuilding images.
+#      mounted volumes without rebuilding images.
 
 apiVersion: v1
 kind: ConfigMap

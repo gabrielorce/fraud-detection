@@ -1,3 +1,5 @@
+# The Streamlit UI connects internally to both http://ml-service:8000 (for scoring predictions)
+#     and postgres-service:5432 (for retrieving transaction logs).
 # Workload Management: Configures how your application containers run, scale, and update on Kubernetes.
 # Container Specs: Defines container images, resource limits (CPU/RAM), and environment variables.
 # Health Checks: Sets up liveness and readiness probes to monitor container health.

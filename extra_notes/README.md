@@ -1,9 +1,4 @@
 
-## Streamlit
-
-The Streamlit App is executed with this command:  
-```streamlit run your_script.py```
-
 ## Registry - Image Pull Policy
 
 By default, if ```imagePullPolicy``` is omitted in a Deployment manifest, Kubernetes applies a default rule based on the image tag:
@@ -58,3 +53,5 @@ See ```templates/ml-configmap.yaml```:
 Helm dynamically pulls in the full python script at deploy time using ```.Files.Get```
 See:
 https://helm.sh/docs/chart_template_guide/accessing_files/
+
+

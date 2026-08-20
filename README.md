@@ -4,14 +4,14 @@
 ## Architecture:
 
 
-                                [ User Browser ]  
-                                        │  
-                                        ▼ (HTTP :80 / :8501)  
-                             ┌──────────────────────┐    
-                             │   Frontend (Pod)     │    
-                             │  (Streamlit / Python)│    
-                             └──────────┬───────────┘     
-                                        │    
+                                    [ User Browser ]  
+                                            │  
+                                            ▼ (HTTP :80 / :8501)  
+                                 ┌──────────────────────┐    
+                                 │   Frontend (Pod)     │    
+                                 │  (Streamlit / Python)│    
+                                 └──────────┬───────────┘     
+                                            │    
                  ┌──────────────────────────┴──────────────────────────┐   
                  │ Internal HTTP                                       │ Internal DB Query   
                  ▼ (:8000)                                             ▼ (:5432)   
@@ -30,6 +30,7 @@
 ## Tech stack:
  
 - Streamlit for frontend   
+- PostgreSQL as database
 
 
 ## File Structure:
@@ -46,6 +47,29 @@
         └── frontend-service.yaml   
 
 
+    fraud-detection/
+        ├── helm/
+        │   └── fraud-detection-chart/
+        │       ├── Chart.yaml
+        │       ├── values.yaml
+        │       ├── scripts/
+        │       │   └── train_model.py         <-- Place training script here
+        │       └── templates/
+        │           ├── ml-configmap.yaml      <-- Uses .Files.Get "scripts/train_model.py"
+        │           ├── ml-deployment.yaml
+        │           ├── frontend-deployment.yaml
+        │           └── postgres-statefulset.yaml
+        ├── src/
+        │   ├── frontend/
+        │   │   ├── Dockerfile
+        │   │   ├── app.py
+        │   │   └── requirements.txt
+        │   └── ml_service/
+        │       ├── Dockerfile
+        │       ├── main.py
+        │       └── requirements.txt
+        ├── .gitignore
+        └── .dockerignore
 
 
 
@@ -60,7 +84,10 @@
 
 #### 3. Load images into Kind cluster nodes  (exclusive to Kind)
 ```kind load docker-image local-registry/fraud-frontend:latest --name fraud-cluster```  
-```kind load docker-image local-registry/fraud-ml-api:latest --name fraud-cluster```  
+```kind load docker-image local-registry/fraud-ml-api:latest --name fraud-cluster```    
+ 
+NOTE: ```local-registry``` is just a placeholder for a Container Registry domain or namespace. It can actually have any name (e.g., ```my-registry```).   
+
 
 #### 4. Deploy the Helm Chart
 
@@ -82,7 +109,7 @@ See more commands below.
 ```kubectl get pods -w```     
 
 
-When all Pods show Running, port-forward to access the Streamlit UI in your browser:
+#### 6. When all Pods show Running, port-forward to access the Streamlit UI in your browser:
 
 ```kubectl port-forward service/frontend-service 8501:80```   
 
@@ -92,6 +119,14 @@ Then open ```http://localhost:8501``` in your browser.
 
 
 ### More Helm commands
+
+
+#### Validate chart syntax
+```helm lint fraud-detection-chart/```
+
+#### Dry run local render
+```helm install fraud-demo fraud-detection-chart/ --dry-run```
+
 
 
 Install or upgrade in one command (handy for CI/CD or repeated runs)  

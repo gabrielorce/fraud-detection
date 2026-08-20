@@ -1,3 +1,14 @@
+# In this case:
+# We add a Readiness Probe. If not, Kubernetes will send traffic from the frontend-ui
+# to ml-service as soon as the container boots up. If scikit-learn takes a few seconds
+# to load fraud_model.pkl into memory, early requests will crash with 500 Internal Server Error
+
+# We also use an initContainer
+# While downloading pandas and scikit-learn via pip install inside the initContainer works,
+# it slows down pod startup times significantly (downloading ~150MB of packages on every pod restart).
+# Better Approach: Use a pre-built data science image for the initContainer instead
+# of downloading packages dynamically:
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -14,7 +25,11 @@ spec:
     spec:
       initContainers:
         - name: model-trainer
-          image: python:3.11-slim
+          image: python:3.11-slim      
+          # another version has this entry:
+          # image: {{ .Values.mlService.trainerImage | default "python:3.11-slim" }}
+          # BUT trainerImage would have to be configured in values.yaml
+          imagePullPolicy: IfNotPresent  # <-- Forces K8s to use local image first
           command: ["/bin/sh", "-c"]
           args:
             - |
@@ -42,7 +57,7 @@ spec:
               value: "/mnt/data/fraud_model.pkl"
           readinessProbe:
             httpGet:
-              path: /docs
+              path: /docs    # FastAPI serves swagger docs here natively
               port: 8000
             initialDelaySeconds: 5
             periodSeconds: 5

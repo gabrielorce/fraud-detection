@@ -1,6 +1,6 @@
 # Your dataset and .pkl model file live on a PersistentVolumeClaim (PVC). 
 # On AWS, this translates directly to an EBS or EFS volume so training data
-# is never baked into the container image.
+#    is never baked into the container image.
 
 apiVersion: v1
 kind: PersistentVolumeClaim
