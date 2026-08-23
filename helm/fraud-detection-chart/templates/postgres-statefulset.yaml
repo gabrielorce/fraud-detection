@@ -1,12 +1,27 @@
 # We use a StatefulSet rather than a standard Deployment
 # so PostgreSQL gets a sticky identity and reliable storage.
 
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-service          # <-- 1. Name of the Headless Service
+  labels:
+    app: postgres
+spec:
+  clusterIP: None
+  ports:
+    - port: 5432
+      name: postgres
+  selector:
+    app: postgres
+---
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: postgres
 spec:
-  serviceName: postgres
+  serviceName: "postgres-service"  # <-- 2. MUST match the Service name above
   replicas: 1
   selector:
     matchLabels:
@@ -21,13 +36,17 @@ spec:
           image: postgres:15-alpine
           ports:
             - containerPort: 5432
+              name: postgres
           env:
-            - name: POSTGRES_USER
-              value: {{ .Values.postgres.user }}
-            - name: POSTGRES_PASSWORD
-              value: {{ .Values.postgres.password }}
             - name: POSTGRES_DB
-              value: {{ .Values.postgres.dbName }}
+              value: {{ .Values.postgres.dbName | quote }}
+            - name: POSTGRES_USER
+              value: {{ .Values.postgres.user | quote }}
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: postgres-password
           volumeMounts:
             - name: postgres-storage
               mountPath: /var/lib/postgresql/data
@@ -38,15 +57,4 @@ spec:
         accessModes: [ "ReadWriteOnce" ]
         resources:
           requests:
-            storage: {{ .Values.postgres.storageSize }}
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: postgres-service
-spec:
-  ports:
-    - port: 5432
-      targetPort: 5432
-  selector:
-    app: postgres
+            storage: 2Gi
