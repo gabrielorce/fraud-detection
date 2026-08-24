@@ -47,4 +47,13 @@ This is defined in the ```ml-deployment.yaml```  file.
 ## ConfigMaps 
 <https://kubernetes.io/docs/concepts/configuration/configmap/>      
 <https://helm.sh/docs/chart_template_guide/getting_started/>    
-A ConfigMap allows you to decouple environment-specific configuration from your container images, so that your applications are easily portable.  
+A ConfigMap allows you to decouple environment-specific configuration from your container images, so that your applications are easily portable.     
+
+
+### MORE YAML
+in the YAML, this:    
+
+```{{- if .Values.postgres.enabled }}```
+
+
+if someone sets postgres.enabled: false (say, they're using an external managed Postgres instead of running one in-cluster), you don't want Helm to still create a postgres-secret that nothing uses. This guard makes the Secret's existence match the StatefulSet's existence — both created together, or neither created.

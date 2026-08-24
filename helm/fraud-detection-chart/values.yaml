@@ -9,7 +9,9 @@ environment: development
 postgres:
   enabled: true
   user: fraud_user
-  password: securepassword123
+  password: securepassword123   # This secret should not exist here. 
+                                # Should be detectable by trufflehog or git leaks.
+                                # Delete it, then try secret detection
   dbName: fraud_db
   storageSize: 5Gi
 
