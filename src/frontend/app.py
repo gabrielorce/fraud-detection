@@ -14,9 +14,12 @@ st.write("Enter transaction metrics below to evaluate risk using the ML microser
 col1, col2 = st.columns(2)
 
 with col1:
-    amount = st.number_input("Transaction Amount ($)", min_value=1.0, value=150.0)
-    location_score = st.slider("Geolocation Anomaly Score", 0.0, 1.0, 0.1)
-    device_velocity = st.number_input("Devices Used in 24h", min_value=1, value=1)
+    # Amount slider: $0 to $3,000
+    amount = st.number_input("Transaction Amount ($)", min_value=1.0, max_value=3000.0, value=250.0)
+    # Location score: 0.0 to 1.0
+    location_score = st.slider("Location Anomaly Score", min_value=0.0, max_value=1.0, value=0.1)
+    # Device velocity: 1 to 12
+    device_velocity = st.slider("Device Velocity (24h)", min_value=1, max_value=12, value=2)
 
 with col2:
     st.subheader("Risk Analysis")

@@ -106,7 +106,9 @@ You can also upgrade (after you change the chart or values):
 See more commands below.  
 
 #### 5. Check Pod status
-```kubectl get pods -w```     
+```kubectl get pods -w```      
+
+The -w (or --watch) flag tells kubectl to stream real-time updates rather than returning to the command prompt.   
 
 
 #### 6. When all Pods show Running, port-forward to access the Streamlit UI in your browser:
@@ -116,6 +118,8 @@ See more commands below.
 
 Then open ```http://localhost:8501``` in your browser.
 
+if port is already in use, you can kill the corresponding process using it:    
+```sudo fuser -k 8501/tcp```     
 
 
 ### More Helm commands
@@ -164,4 +168,87 @@ Typical workflow once your chart is ready:
 3) Make changes → ```helm upgrade myapp ./mychart``` — subsequent deploys   
 
 One thing worth checking before you run install: make sure your ```kubectl``` context is pointed at the right cluster (```kubectl config current-context```), since Helm just uses whatever context kubectl is configured with.
+
+
+
+
+Troubleshooting:   
+Check if ML model is being loaded.   
+1) Check the ```/health``` Endpoint
+
+```
+# Forward ML service port if not already forwarded
+kubectl port-forward service/ml-service 8000:8000
+```
+
+then check via web browser or via curl:   
+```curl http://localhost:8000/health```
+   
+   
+   
+To restart the ML service deployment after a change:   
+```kubectl rollout restart deployment/ml-fraud-service```   
+
+
+
+
+
+
+
+# Restarting the Kubernetes Setup  
+
+## Soft-restart:  
+
+If you made code changes, updated Docker images, or just want all pods to restart without destroying your PostgreSQL database, perform a rolling restart:  
+```
+# Force Kubernetes to restart all deployments and statefulsets
+kubectl rollout restart deployment/frontend-ui
+kubectl rollout restart deployment/ml-fraud-service
+kubectl rollout restart statefulset/postgres-0
+```
+
+To watch them terminate and boot back up:   
+kubectl get pods -w
+
+## Helm Uninstall & Reinstall (Clean State):   
+If you modified your Helm templates or values and want to wipe out the current release (including ephemeral storage) and redeploy fresh:   
+
+```
+# 1. Uninstall the Helm release
+helm uninstall fraud-app
+
+# 2. Delete any lingering PVCs if you want a totally fresh database (Optional)
+kubectl delete pvc --all
+
+# 3. Re-install the chart
+helm install fraud-app ./helm/fraud-detection-chart
+```
+
+
+## Full Cluster Nuke & Rebuild (Nuclear Option)
+
+If your local cluster state gets corrupted, or images are cached awkwardly in memory: 
+FOR KIND:
+```
+# 1. Destroy cluster
+kind delete cluster --name fraud-cluster
+
+# 2. Recreate cluster
+kind create cluster --name fraud-cluster
+
+# 3. Load host Docker images into cluster
+kind load docker-image local-registry/fraud-frontend:latest --name fraud-cluster
+kind load docker-image local-registry/fraud-ml-api:latest --name fraud-cluster
+
+# 4. Deploy fresh
+helm install fraud-app ./helm/fraud-detection-chart
+```   
+
+
+If you were using port forwarding to access the Streamlit UI or FastAPI metrics, restart your port forward command in a dedicated terminal window:    
+
+```kubectl port-forward service/frontend-service 8501:80```    
+    
+to kill the process using this port:
+sudo fuser -k 8501/tcp
 

@@ -1,27 +1,39 @@
 # We use a StatefulSet rather than a standard Deployment
 # so PostgreSQL gets a sticky identity and reliable storage.
 
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: postgres-service          # <-- 1. Name of the Headless Service
-  labels:
-    app: postgres
-spec:
-  clusterIP: None
-  ports:
-    - port: 5432
-      name: postgres
-  selector:
-    app: postgres
----
+# Named ports (name: postgres) on both the container port and the Service port. 
+# Not required, but it's a best practice: lets other manifests reference the port by
+# name instead of a hardcoded number, and makes kubectl describe output more readable.
+
+# Notice "secretKeyRef". This StatefulSet will fail to start (CreateContainerConfigError) 
+# if that Secret doesn't exist in the same namespace when this applies.
+
+# READINESS PROBE:
+# Postgres containers can report "running" before they're actually ready to accept connections.
+# Without a readiness probe, other pods might try to connect too early (especially at first boot / init).
+# ReadinessProbe is a container-level field because probes check the health of that specific 
+# container, not the pod as a whole.
+
+# readinessProbe — "should this pod receive traffic right now?" 
+#    (fails = removed from Service endpoints, but pod keeps running)
+# livenessProbe — "is this container still healthy?" 
+#    (fails = Kubernetes restarts the container)
+
+# Similar structure, the only thing that should usually differ is timing:
+# readinessProbe — checks sooner, more frequently (you want traffic gated quickly)
+# livenessProbe — more lenient delay (you don't want a restart storm if Postgres is just slow to start)
+
+# ==============================================================================
+# PostgreSQL StatefulSet and Headless Service Configuration
+# ==============================================================================
+{{- if .Values.postgres.enabled }}
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: postgres
 spec:
-  serviceName: "postgres-service"  # <-- 2. MUST match the Service name above
+  # Must match the Headless Service name for DNS resolution
+  serviceName: postgres
   replicas: 1
   selector:
     matchLabels:
@@ -38,18 +50,29 @@ spec:
             - containerPort: 5432
               name: postgres
           env:
-            - name: POSTGRES_DB
-              value: {{ .Values.postgres.dbName | quote }}
             - name: POSTGRES_USER
               value: {{ .Values.postgres.user | quote }}
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: postgres-secret
-                  key: postgres-password
+                  key: password
+            - name: POSTGRES_DB
+              value: {{ .Values.postgres.dbName | quote }}
+          readinessProbe:
+            exec:
+              command: ["pg_isready", "-U", "{{ .Values.postgres.user }}"]
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          livenessProbe:
+            exec:
+              command: ["pg_isready", "-U", "{{ .Values.postgres.user }}"]
+            initialDelaySeconds: 10
+            periodSeconds: 10
           volumeMounts:
             - name: postgres-storage
               mountPath: /var/lib/postgresql/data
+  # Persistent volume allocation per pod instance
   volumeClaimTemplates:
     - metadata:
         name: postgres-storage
@@ -57,4 +80,22 @@ spec:
         accessModes: [ "ReadWriteOnce" ]
         resources:
           requests:
-            storage: 2Gi
+            storage: {{ .Values.postgres.storageSize }}
+---
+# ==============================================================================
+# Headless Service for StatefulSet Network Identity
+# ==============================================================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+spec:
+  # clusterIP: "None" makes this service headless
+  clusterIP: None
+  ports:
+    - port: 5432
+      targetPort: 5432
+      name: postgres
+  selector:
+    app: postgres
+{{- end }}

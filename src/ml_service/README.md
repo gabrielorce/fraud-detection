@@ -96,3 +96,5 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 - For ```src/ml_service/Dockerfile```, FastAPI / Uvicorn exposes documentation at ```/docs``` by default (or any root endpoint):   
 ```HEALTHCHECK CMD curl --fail http://localhost:8000/docs || exit 1 ```
+
+
